@@ -39,7 +39,7 @@
       user: 
         name: deploy 
         password: deploypwd
-        group: admin
+
 
     - name: Add deploy user to sudoers
       lineinfile:
