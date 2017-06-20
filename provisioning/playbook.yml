@@ -1,0 +1,97 @@
+---
+# Ansible playbook for a GitLab server.
+#
+# @todo - Install postfix `yum -y install postfix`.
+#
+# @author Jeff Geerling (2014).
+
+- hosts: gitlab
+  gather_facts: yes
+  
+  vars_prompt:
+    # You may need to install passlib for this to work (pip install passlib)
+    - name: 'root_hashed_password'
+      prompt: "Enter the root hashed user password (python -c \"from passlib.hash import sha512_crypt; import getpass; print sha512_crypt.encrypt(getpass.getpass())\""
+      private: yes
+
+    # You may need to install passlib for this to work (pip install passlib)
+    - name: 'deploy_hashed_password'
+      prompt: "Enter the deploy hashed user password (python -c \"from passlib.hash import sha512_crypt; import getpass; print sha512_crypt.encrypt(getpass.getpass())\""
+      private: yes
+      
+  vars_files:
+    - vars/main.yml
+
+  roles:
+    - firewall
+    - gitlab
+
+  tasks:
+    
+
+
+    - name: install sudo command
+      apt:
+        pkg: "{{ item }}"
+        state: present
+      with_items:
+        - "sudo"
+
+    - name: Add deployment user
+      user: 
+        name: deploy 
+        password: '{{ deploy_hashed_password }}'
+
+    - name: Add authorized deploy key
+      authorized_key: 
+        user: deploy
+        state: present
+        key: "{{ lookup('file', '{{ playbook_dir }}/../keys/id_rsa_mbp_p.pub') }}"
+
+    - name: Remove sudo group rights
+      lineinfile: 
+        dest: /etc/sudoers 
+        regexp: "^%sudo" 
+        state: absent
+
+    - name: Add deploy user to sudoers
+      lineinfile:
+        dest: /etc/sudoers 
+        regexp: "deploy ALL" 
+        line: "deploy ALL=(ALL) ALL" 
+        state: present
+        create: yes
+
+    - name: Disallow root SSH access
+      lineinfile: 
+        dest: /etc/ssh/sshd_config 
+        regexp: "^PermitRootLogin" 
+        line: "PermitRootLogin no" 
+        state: present
+      notify: Restart sshd
+
+    - name: Disallow password authentication
+      lineinfile: 
+        dest: /etc/ssh/sshd_config 
+        regexp: "^PasswordAuthentication" 
+        line: "PasswordAuthentication no"
+        state: present
+      notify: Restart sshd
+
+    - name: Change root password
+      user:
+        name: root
+        password: '{{ root_hashed_password }}'
+      
+    - name: gitlab backup
+        cron: minute="20" 
+              hour="10" 
+              name="Gitlab backup"
+              user="root"
+              job="sudo tar -zcvf /etc/gitlab/backups/$(date "+backup-gitlab-\%s.tgz") -C /etc/gitlab"
+
+  handlers:
+    - name: Restart sshd
+      action: service name=sshd state=restarted    
+  
+   
