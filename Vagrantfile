@@ -76,9 +76,10 @@ Vagrant.configure("2") do |config|
     # Fetch Gitlab Ansible playbook and associated roles
     mkdir -p /app/deploy
     cd /app/deploy
-    sudo git clone -b https://github.com/sofiannagounine/test_gitlab_reconfigure.git .
+    sudo git clone https://github.com/sofiannagounine/test_gitlab_reconfigure.git 
 	
-    cd /app/deploy/provisioning/
+    cd test_gitlab_reconfigure/provisioning/
+
     ## To run the playbook, type:
     ansible-playbook playbook.yml -i inventory -b
   SHELL
