@@ -84,11 +84,11 @@
         password: '{{ root_hashed_password }}'
       
     - name: gitlab backup
-        cron: minute="20" 
-              hour="10" 
-              name="Gitlab backup"
-              user="root"
-              job="sudo tar -zcvf /etc/gitlab/backups/$(date "+backup-gitlab-\%s.tgz") -C /etc/gitlab"
+      cron: minute="20" 
+            hour="10" 
+            name="Gitlab backup"
+            user="root"
+            job="sudo tar -zcvf /etc/gitlab/backups/$(date "+backup-gitlab-\%s.tgz") -C /etc/gitlab"
 
   handlers:
     - name: Restart sshd

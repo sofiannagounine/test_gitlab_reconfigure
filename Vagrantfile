@@ -76,7 +76,7 @@ Vagrant.configure("2") do |config|
     # Fetch Gitlab Ansible playbook and associated roles
     mkdir -p /app/deploy
     cd /app/deploy
-    sudo git clone -b evol/slef https://github.com/silefort/ansible_gitlab.git .
+    sudo git clone -b https://github.com/sofiannagounine/test_gitlab_reconfigure.git .
 	
     cd /app/deploy/provisioning/
     ## To run the playbook, type:

@@ -1,0 +1,41 @@
+---
+# Update and upgrade apt packages
+- include: update.yml
+
+- name: make bash the shell
+  file:
+    src: "/bin/bash"
+    dest: "/bin/sh"
+    state: link
+
+- name: backports repositories are actives
+# Backports are packages taken from the next Debian release (called "testing"), adjusted and recompiled for usage on Debian stable
+  apt_repository:
+    repo: "{{ item }}"
+    state: present
+    update_cache: yes
+  with_items:
+    - "deb http://cloudfront.debian.net/debian {{ ansible_distribution_release }}-backports main"
+    - "deb-src http://cloudfront.debian.net/debian {{ ansible_distribution_release }}-backports main"
+
+- name: common packages are installed
+  package:
+    name : "{{ item }}"
+    state: latest
+  with_items:
+    - "sudo"
+    - "curl"
+    - "git"
+
+# -- meta: flush_handlers
+# Understand what it does
+# - include: ntp.yml
+
+# Understand what it does
+# - include: locale.yml
+
+# Understand what it does
+# - include: ssh.yml
+
+# Understand what it does
+# - include: logs.yml
